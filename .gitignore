@@ -10,6 +10,8 @@ Homestead.json
 db.mwb.bak
 bower_components
 /CHANGE
+composer.lock
+
 
 ### Node ###
 # Logs
