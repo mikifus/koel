@@ -10,7 +10,6 @@ use JWTAuth;
 use Log;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use DB;
-use Auth;
 use Hash;
 
 class ComplementAuthController extends Authcontroler
@@ -40,7 +39,9 @@ class ComplementAuthController extends Authcontroler
 
         DB::setDefaultConnection('mysql');
         $local_token = JWTAuth::attempt($credentials);
-        if( !$local_token ) {
+        if( $local_token ) {
+            $token = $local_token;
+        } else {
             $this->import_user();
             $token = JWTAuth::attempt($request->only('email', 'password'));
         }
@@ -61,5 +62,14 @@ class ComplementAuthController extends Authcontroler
             'email'    => $credentials['email'],
             'password' => Hash::make($request->password),
         ]);
+    }
+
+    private function hhx_login( $credentials ) {
+        $complement_field_email = env('COMPLEMENT_FIELD_EMAIL', 'email');
+        $complement_field_name  = env('COMPLEMENT_FIELD_NAME', 'name');
+        $complement_field_password  = env('COMPLEMENT_FIELD_PASSWORD', 'password');
+        DB::setDefaultConnection('complement');
+
+
     }
 }
