@@ -42,13 +42,13 @@ class ComplementAuthController extends Authcontroler
         $local_token = JWTAuth::attempt($credentials);
         if( !$local_token ) {
             $this->import_user();
-            $token = JWTAuth::attempt($request->only('email', 'password'));
+            $local_token = JWTAuth::attempt($request->only('email', 'password'));
         }
 
-        return response()->json(compact('token'));
+        return response()->json(compact('local_token'));
     }
 
-    private function import_user() {
+    private function import_user( $credentials ) {
         $complement_field_email = env('COMPLEMENT_FIELD_EMAIL', 'email');
         $complement_field_name  = env('COMPLEMENT_FIELD_NAME', 'name');
         DB::setDefaultConnection('complement');
@@ -59,7 +59,7 @@ class ComplementAuthController extends Authcontroler
         User::create([
             'name'     => $userdata[ $complement_field_name ],
             'email'    => $credentials['email'],
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($credentials['password']),
         ]);
     }
 }
