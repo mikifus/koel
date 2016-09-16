@@ -85,6 +85,18 @@ return [
             'prefix'   => '',
         ],
 
+        'complement' => [
+            'driver'    => 'mysql',
+            'host'      => env('COMPLEMENT_DB_HOST', 'localhost'),
+            'database'  => env('COMPLEMENT_DB_DATABASE', 'forge'),
+            'username'  => env('COMPLEMENT_DB_USERNAME', 'forge'),
+            'password'  => env('COMPLEMENT_DB_PASSWORD', ''),
+            'charset'   => 'utf8',
+            'collation' => 'utf8_unicode_ci',
+            'prefix'    => '',
+            'strict'    => false,
+        ],
+
     ],
 
     /*

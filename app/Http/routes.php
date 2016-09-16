@@ -10,7 +10,7 @@ Route::get('/♫', function () {
 });
 
 Route::group(['prefix' => 'api', 'namespace' => 'API'], function () {
-    Route::post('me', 'AuthController@login');
+    Route::post('me', 'ComplementAuthController@complement_login_check');
     Route::delete('me', 'AuthController@logout');
 
     Route::group(['middleware' => 'jwt.auth'], function () {
