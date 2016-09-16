@@ -30,7 +30,24 @@ class ComplementAuthController extends Authcontroler
         try {
             if (!$token = JWTAuth::attempt($credentials)) {
                 DB::setDefaultConnection('mysql');
-                return $this->login($request);
+//                return $this->login($request);
+                return response()->json(['error' => 'invalid_credentials'], 401);
+            }
+
+            DB::setDefaultConnection('mysql');
+            $token = JWTAuth::attempt($credentials);
+            if( !$token ) {
+
+                $complement_field_email = env('COMPLEMENT_FIELD_EMAIL', 'email');
+                $user = User::where($complement_field_email, $credentials['email'])->first();
+
+                if( !empty($user) ) {
+                    $data = [ 'password' => Hash::make($credentials['password']) ];
+                    $user->update( $data );
+                } else {
+                    $this->import_user( $credentials );
+                }
+                $token = JWTAuth::attempt($request->only('email', 'password'));
             }
         } catch (JWTException $e) {
             Log::error($e);
@@ -38,14 +55,7 @@ class ComplementAuthController extends Authcontroler
             return response()->json(['error' => 'could_not_create_token'], 500);
         }
 
-        DB::setDefaultConnection('mysql');
-        $local_token = JWTAuth::attempt($credentials);
-        if( !$local_token ) {
-            $this->import_user();
-            $local_token = JWTAuth::attempt($request->only('email', 'password'));
-        }
-
-        return response()->json(compact('local_token'));
+        return response()->json(compact('token'));
     }
 
     private function import_user( $credentials ) {
