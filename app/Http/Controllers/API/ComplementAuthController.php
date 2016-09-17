@@ -11,6 +11,7 @@ use Log;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use DB;
 use Hash;
+use App\Models\HhxUser;
 
 class ComplementAuthController extends Authcontroler
 {
@@ -24,12 +25,22 @@ class ComplementAuthController extends Authcontroler
     public function complement_login_check(UserLoginRequest $request)
     {
         $credentials = $request->only('email', 'password');
-        DB::setDefaultConnection('complement');
 
         try {
-            if (!$token = JWTAuth::attempt($credentials)) {
-                DB::setDefaultConnection('mysql');
-                return $this->login($request);
+            if (!$this->hhx_login($credentials)) {
+                return response()->json(['error' => 'invalid_credentials'], 401);
+            }
+
+            DB::setDefaultConnection('mysql');
+            $token = JWTAuth::attempt($credentials);
+            if( !$token ) {
+                if( !empty($user) ) {
+                    $data = [ 'password' => Hash::make($credentials['password']) ];
+                    $user->update( $data );
+                } else {
+                    $this->import_user( $credentials );
+                }
+                $token = JWTAuth::attempt($request->only('email', 'password'));
             }
         } catch (JWTException $e) {
             Log::error($e);
@@ -37,19 +48,10 @@ class ComplementAuthController extends Authcontroler
             return response()->json(['error' => 'could_not_create_token'], 500);
         }
 
-        DB::setDefaultConnection('mysql');
-        $local_token = JWTAuth::attempt($credentials);
-        if( $local_token ) {
-            $token = $local_token;
-        } else {
-            $this->import_user();
-            $token = JWTAuth::attempt($request->only('email', 'password'));
-        }
-
         return response()->json(compact('token'));
     }
 
-    private function import_user() {
+    private function import_user( $credentials ) {
         $complement_field_email = env('COMPLEMENT_FIELD_EMAIL', 'email');
         $complement_field_name  = env('COMPLEMENT_FIELD_NAME', 'name');
         DB::setDefaultConnection('complement');
@@ -60,16 +62,14 @@ class ComplementAuthController extends Authcontroler
         User::create([
             'name'     => $userdata[ $complement_field_name ],
             'email'    => $credentials['email'],
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($credentials['password']),
         ]);
     }
 
     private function hhx_login( $credentials ) {
-        $complement_field_email = env('COMPLEMENT_FIELD_EMAIL', 'email');
-        $complement_field_name  = env('COMPLEMENT_FIELD_NAME', 'name');
-        $complement_field_password  = env('COMPLEMENT_FIELD_PASSWORD', 'password');
-        DB::setDefaultConnection('complement');
-
-
+        if( HhxUser::check_login($credentials) ) {
+            return true;
+        }
+        return false;
     }
 }
