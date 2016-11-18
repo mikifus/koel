@@ -1,18 +1,8 @@
 <?php
 
-Route::get('/', function () {
-    return view('index');
-});
-
-// Some backward compatibilities.
-Route::get('/♫', function () {
-    return redirect('/');
-});
-
-Route::group(['prefix' => 'api', 'namespace' => 'API'], function () {
-    Route::post('me', 'ComplementAuthController@complement_login_check');
+Route::group(['namespace' => 'API'], function () {
+    Route::post('me', 'AuthController@login');
     Route::delete('me', 'AuthController@logout');
-
     Route::group(['middleware' => 'jwt.auth'], function () {
         Route::get('/', function () {
             // Just acting as a ping service.

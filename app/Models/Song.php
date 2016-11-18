@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use App\Events\LibraryChanged;
+use App\Traits\SupportsDeleteWhereIDsNotIn;
 use AWS;
 use Aws\AwsClient;
 use Cache;
 use Illuminate\Database\Eloquent\Model;
 use Lastfm;
+use YouTube;
 
 /**
  * @property string path
@@ -25,6 +27,8 @@ use Lastfm;
  */
 class Song extends Model
 {
+    use SupportsDeleteWhereIDsNotIn;
+
     protected $guarded = [];
 
     /**
@@ -279,6 +283,18 @@ class Song extends Model
         Cache::put("OSUrl/{$this->id}", $url, 60);
 
         return $url;
+    }
+
+    /**
+     * Get the YouTube videos related to this song.
+     *
+     * @param string $youTubePageToken The YouTube page token, for pagination purpose.
+     *
+     * @return @return object|false
+     */
+    public function getRelatedYouTubeVideos($youTubePageToken = '')
+    {
+        return YouTube::searchVideosRelatedToSong($this, $youTubePageToken);
     }
 
     /**
