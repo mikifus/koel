@@ -3,7 +3,6 @@
     class="song-item"
     draggable="true"
     :data-song-id="song.id"
-    key="id"
     @click="$parent.rowClick(song.id, $event)"
     @dblclick.prevent="playRightAwayyyyyyy"
     @dragstart="$parent.dragStart(song.id, $event)"
@@ -19,8 +18,8 @@
     <td class="album">{{ song.album.name }}</td>
     <td class="time">{{ song.fmtLength }}</td>
     <td class="play" @click.stop="doPlayback">
-      <i class="fa fa-pause-circle" v-if="song.playbackState === 'playing'"></i>
-      <i class="fa fa-play-circle" v-else></i>
+      <i class="fa fa-pause-circle" v-if="song.playbackState === 'playing'"/>
+      <i class="fa fa-play-circle" v-else/>
     </td>
   </tr>
 </template>
