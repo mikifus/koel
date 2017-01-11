@@ -2,8 +2,7 @@
   <section id="favoritesWrapper">
     <h1 class="heading">
       <span>Songs You Love
-        <i class="fa fa-angle-down toggler" v-show="isPhone && !showingControls" @click="showingControls = true"/>
-        <i class="fa fa-angle-up toggler" v-show="isPhone && showingControls" @click.prevent="showingControls = false"/>
+        <controls-toggler :showing-controls="showingControls" @toggleControls="toggleControls"/>
 
         <span class="meta" v-show="meta.songCount">
           {{ meta.songCount | pluralize('song') }}
@@ -12,31 +11,19 @@
           <template v-if="sharedState.allowDownload && state.songs.length">
             •
             <a href @click.prevent="download" title="Download all songs in playlist">
-              Download
+              Download All
             </a>
           </template>
         </span>
       </span>
 
-      <div class="buttons" v-show="!isPhone || showingControls">
-        <button class="play-shuffle btn-orange"
-          @click.prevent="shuffle"
-          v-if="state.songs.length && selectedSongs.length < 2"
-        >
-          <i class="fa fa-random"></i> All
-        </button>
-        <button class="play-shuffle btn-orange" @click.prevent="shuffleSelected" v-if="selectedSongs.length > 1">
-          <i class="fa fa-random"></i> Selected
-        </button>
-        <button class="add-to btn-green" @click.prevent.stop="showingAddToMenu = !showingAddToMenu" v-if="selectedSongs.length">
-          {{ showingAddToMenu ? 'Cancel' : 'Add To…' }}
-        </button>
-
-        <add-to-menu
-          :songs="selectedSongs"
-          :showing="showingAddToMenu && state.songs.length"
-          :settings="{ canLike: false }"/>
-      </div>
+      <song-list-controls
+        v-show="state.songs.length && (!isPhone || showingControls)"
+        @shuffleAll="shuffleAll"
+        @shuffleSelected="shuffleSelected"
+        :config="songListControlConfig"
+        :selectedSongs="selectedSongs"
+      />
     </h1>
 
     <song-list v-show="state.songs.length" :items="state.songs" type="favorites"/>
@@ -50,12 +37,10 @@
 </template>
 
 <script>
-import isMobile from 'ismobilejs';
-
-import { pluralize } from '../../../utils';
-import { favoriteStore, sharedStore } from '../../../stores';
-import { playback, download } from '../../../services';
-import hasSongList from '../../../mixins/has-song-list';
+import { pluralize } from '../../../utils'
+import { favoriteStore, sharedStore } from '../../../stores'
+import { download } from '../../../services'
+import hasSongList from '../../../mixins/has-song-list'
 
 export default {
   name: 'main-wrapper--main-content--favorites',
@@ -65,28 +50,19 @@ export default {
   data () {
     return {
       state: favoriteStore.state,
-      sharedState: sharedStore.state,
-      isPhone: isMobile.phone,
-      showingControls: false,
-    };
+      sharedState: sharedStore.state
+    }
   },
 
   methods: {
     /**
-     * Shuffle the current favorite songs.
-     */
-    shuffle() {
-      playback.queueAndPlay(this.state.songs, true);
-    },
-
-    /**
      * Download all favorite songs.
      */
-    download() {
-      download.fromFavorites();
-    },
-  },
-};
+    download () {
+      download.fromFavorites()
+    }
+  }
+}
 </script>
 
 <style lang="sass">
@@ -94,12 +70,6 @@ export default {
 @import "../../../../sass/partials/_mixins.scss";
 
 #favoritesWrapper {
-  button.play-shuffle, button.del {
-    i {
-      margin-right: 0 !important;
-    }
-  }
-
   .none {
     color: $color2ndText;
     padding: 16px 24px;

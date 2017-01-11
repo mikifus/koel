@@ -157,7 +157,10 @@ class Media
             // File format etc. will be handled by File::sync().
             elseif ($record->isNewOrModified()) {
                 $result = (new File($path))->sync($this->tags);
+
                 Log::info($result instanceof Song ? "Synchronized $path" : "Invalid file $path");
+
+                event(new LibraryChanged());
             }
 
             return;
@@ -178,6 +181,8 @@ class Media
             foreach ($this->gatherFiles($path) as $file) {
                 (new File($file))->sync($this->tags);
             }
+
+            event(new LibraryChanged());
 
             Log::info("Synced all song(s) under $path");
         }

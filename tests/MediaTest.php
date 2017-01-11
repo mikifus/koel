@@ -86,8 +86,8 @@ class MediaTest extends TestCase
 
         // Make some modification to the records
         $song = Song::orderBy('id', 'desc')->first();
-        $orginalTitle = $song->title;
-        $orginalLyrics = $song->lyrics;
+        $originalTitle = $song->title;
+        $originalLyrics = $song->lyrics;
 
         $song->update([
             'title' => "It's John Cena!",
@@ -107,8 +107,8 @@ class MediaTest extends TestCase
 
         // All is lost.
         $song = Song::orderBy('id', 'desc')->first();
-        $this->assertEquals($orginalTitle, $song->title);
-        $this->assertEquals($orginalLyrics, $song->lyrics);
+        $this->assertEquals($originalTitle, $song->title);
+        $this->assertEquals($originalLyrics, $song->lyrics);
     }
 
     public function testSyncSelectiveTags()
@@ -120,8 +120,7 @@ class MediaTest extends TestCase
 
         // Make some modification to the records
         $song = Song::orderBy('id', 'desc')->first();
-        $orginalTitle = $song->title;
-        $orginalLyrics = $song->lyrics;
+        $originalTitle = $song->title;
 
         $song->update([
             'title' => "It's John Cena!",
@@ -133,7 +132,7 @@ class MediaTest extends TestCase
 
         // Validate that the specified tags are changed, other remains the same
         $song = Song::orderBy('id', 'desc')->first();
-        $this->assertEquals($orginalTitle, $song->title);
+        $this->assertEquals($originalTitle, $song->title);
         $this->assertEquals('Booom Wroooom', $song->lyrics);
     }
 
@@ -157,6 +156,8 @@ class MediaTest extends TestCase
 
     public function testWatchSingleFileAdded()
     {
+        $this->expectsEvents(LibraryChanged::class);
+
         $path = $this->mediaPath.'/blank.mp3';
 
         (new Media())->syncByWatchRecord(new InotifyWatchRecord("CLOSE_WRITE,CLOSE $path"));
@@ -206,8 +207,7 @@ class MediaTest extends TestCase
             ],
         ]);
 
-        $file = new File(dirname(__FILE__).'/songs/blank.mp3', $getID3);
-        $info = $file->getInfo();
+        $info = (new File(__DIR__.'/songs/blank.mp3', $getID3))->getInfo();
 
         $this->assertEquals('佐倉綾音 Unknown', $info['artist']);
         $this->assertEquals('小岩井こ Random', $info['album']);

@@ -1,20 +1,12 @@
 <?php
 
 use App\Events\LibraryChanged;
-use App\Models\Album;
-use App\Models\Artist;
-use App\Models\Song;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 
 class ObjectStorage_S3Test extends TestCase
 {
     use DatabaseTransactions, WithoutMiddleware;
-
-    public function setUp()
-    {
-        parent::setUp();
-    }
 
     public function testPut()
     {

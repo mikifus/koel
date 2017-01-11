@@ -18,7 +18,7 @@ class YouTubeTest extends TestCase
         $this->withoutEvents();
 
         $client = m::mock(Client::class, [
-            'get' => new Response(200, [], file_get_contents(dirname(__FILE__).'/blobs/youtube/search.json')),
+            'get' => new Response(200, [], file_get_contents(__DIR__.'/blobs/youtube/search.json')),
         ]);
 
         $api = new YouTube(null, $client);
@@ -27,7 +27,7 @@ class YouTubeTest extends TestCase
         $this->assertEquals('Slipknot - Snuff [OFFICIAL VIDEO]', $response->items[0]->snippet->title);
 
         // Is it cached?
-        $this->assertNotNull(Cache::get('1492972ec5c8e6b3a9323ba719655ddb'));
+        $this->assertNotNull(cache('1492972ec5c8e6b3a9323ba719655ddb'));
     }
 
     public function testSearchVideosRelatedToSong()

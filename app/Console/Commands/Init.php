@@ -7,6 +7,7 @@ use DB;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
+use MediaCache;
 
 class Init extends Command
 {
@@ -60,6 +61,8 @@ class Init extends Command
 
         $this->info('Migrating database');
         Artisan::call('migrate', ['--force' => true]);
+        // Clean the media cache, just in case we did any media-related migration
+        MediaCache::clear();
 
         if (!User::count()) {
             $this->info('Seeding initial data');
@@ -68,8 +71,8 @@ class Init extends Command
             $this->comment('Data seeded -- skipping');
         }
 
-        $this->info('Executing npm install, gulp and whatnot');
-        system('npm install');
+        $this->info('Executing yarn install, gulp and whatnot');
+        system('yarn install');
 
         $this->comment(PHP_EOL.'🎆  Success! You can now run Koel from localhost with `php artisan serve`.');
         $this->comment('Again, for more configuration guidance, refer to');

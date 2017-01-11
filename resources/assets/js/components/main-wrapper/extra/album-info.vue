@@ -21,11 +21,12 @@
       <section class="track-listing" v-if="album.info.tracks.length">
         <h1>Track Listing</h1>
         <ul class="tracks">
-          <li v-for="(track, idx) in album.info.tracks">
-            <span class="no">{{ idx + 1 }}</span>
-            <span class="title">{{ track.title }}</span>
-            <span class="length">{{ track.fmtLength }}</span>
-          </li>
+          <li is="track-list-item"
+            v-for="(track, idx) in album.info.tracks"
+            :album="album"
+            :track="track"
+            :index="idx"
+          />
         </ul>
       </section>
 
@@ -37,42 +38,50 @@
 </template>
 
 <script>
-import { playback } from '../../../services';
+import { sharedStore } from '../../../stores'
+import { playback, ls } from '../../../services'
+import trackListItem from '../../shared/track-list-item.vue'
 
 export default {
   props: ['album', 'mode'],
+  components: { trackListItem },
 
-  data() {
+  data () {
     return {
       showingFullWiki: false,
-    };
+      useiTunes: sharedStore.state.useiTunes
+    }
   },
 
   watch: {
-    album() {
-      this.showingFullWiki = false;
-    },
+    album () {
+      this.showingFullWiki = false
+    }
   },
 
   computed: {
-    showSummary() {
-      return this.mode !== 'full' && !this.showingFullWiki;
+    showSummary () {
+      return this.mode !== 'full' && !this.showingFullWiki
     },
 
-    showFull() {
-      return this.mode === 'full' || this.showingFullWiki;
+    showFull () {
+      return this.mode === 'full' || this.showingFullWiki
     },
+
+    iTunesUrl () {
+      return `/api/itunes/album/${this.album.id}&jwt-token=${ls.get('jwt-token')}`
+    }
   },
 
   methods: {
     /**
      * Shuffle all songs in the current album.
      */
-    shuffleAll() {
-      playback.playAllInAlbum(this.album);
-    },
-  },
-};
+    shuffleAll () {
+      playback.playAllInAlbum(this.album)
+    }
+  }
+}
 </script>
 
 <style lang="sass">

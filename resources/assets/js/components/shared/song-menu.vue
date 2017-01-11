@@ -30,128 +30,122 @@
 </template>
 
 <script>
-import $ from 'jquery';
+import songMenuMethods from '../../mixins/song-menu-methods'
 
-import songMenuMethods from '../../mixins/song-menu-methods';
-
-import { event, isClipboardSupported, copyText } from '../../utils';
-import { sharedStore, songStore, queueStore, userStore, playlistStore } from '../../stores';
-import { playback, download } from '../../services';
-import router from '../../router';
+import { event, isClipboardSupported, copyText } from '../../utils'
+import { sharedStore, songStore, queueStore, userStore, playlistStore } from '../../stores'
+import { playback, download } from '../../services'
+import router from '../../router'
 
 export default {
   name: 'song-menu',
   props: ['songs'],
   mixins: [songMenuMethods],
 
-  data() {
+  data () {
     return {
       playlistState: playlistStore.state,
       sharedState: sharedStore.state,
-      copyable: isClipboardSupported(),
-    };
+      copyable: isClipboardSupported()
+    }
   },
 
   computed: {
-    onlyOneSongSelected() {
-      return this.songs.length === 1;
+    onlyOneSongSelected () {
+      return this.songs.length === 1
     },
 
-    firstSongPlaying() {
-      return this.songs[0] ? this.songs[0].playbackState === 'playing' : false;
+    firstSongPlaying () {
+      return this.songs[0] ? this.songs[0].playbackState === 'playing' : false
     },
 
-    isAdmin() {
-      return userStore.current.is_admin;
-    },
+    isAdmin () {
+      return userStore.current.is_admin
+    }
   },
 
   methods: {
-    open(top = 0, left = 0) {
+    open (top = 0, left = 0) {
       if (!this.songs.length) {
-        return;
+        return
       }
 
-      this.top = top;
-      this.left = left;
-      this.shown = true;
+      this.top = top
+      this.left = left
+      this.shown = true
 
       this.$nextTick(() => {
         // Make sure the menu isn't off-screen
         if (this.$el.getBoundingClientRect().bottom > window.innerHeight) {
-          $(this.$el).css({
-            top: 'auto',
-            bottom: 0,
-          });
+          this.$el.style.top = 'auto'
+          this.$el.style.bottom = 0
         } else {
-          $(this.$el).css({
-            top: this.top,
-            bottom: 'auto',
-          });
+          this.$el.style.top = this.top
+          this.$el.style.bottom = 'auto'
         }
 
-        this.$refs.menu.focus();
-      });
+        this.$refs.menu.focus()
+      })
     },
 
     /**
      * Take the right playback action based on the current playback state.
      */
-    doPlayback() {
+    doPlayback () {
       switch (this.songs[0].playbackState) {
         case 'playing':
-          playback.pause();
-          break;
+          playback.pause()
+          break
         case 'paused':
-          playback.resume();
-          break;
+          playback.resume()
+          break
         default:
           if (!queueStore.contains(this.songs[0])) {
-            queueStore.queueAfterCurrent(this.songs[0]);
+            queueStore.queueAfterCurrent(this.songs[0])
           }
 
-          playback.play(this.songs[0]);
-          break;
+          playback.play(this.songs[0])
+          break
       }
 
-      this.close();
+      this.close()
     },
 
     /**
      * Trigger opening the "Edit Song" form/overlay.
      */
-    openEditForm() {
+    openEditForm () {
       if (this.songs.length) {
-        event.emit('songs:edit', this.songs);
+        event.emit('songs:edit', this.songs)
       }
 
-      this.close();
+      this.close()
     },
 
     /**
      * Load the album details screen.
      */
-    viewAlbumDetails(album) {
-      router.go(`album/${album.id}`);
-      this.close();
+    viewAlbumDetails (album) {
+      router.go(`album/${album.id}`)
+      this.close()
     },
 
     /**
      * Load the artist details screen.
      */
-    viewArtistDetails(artist) {
-      router.go(`artist/${artist.id}`);
-      this.close();
+    viewArtistDetails (artist) {
+      router.go(`artist/${artist.id}`)
+      this.close()
     },
 
-    download() {
-      download.fromSongs(this.songs);
-      this.close();
+    download () {
+      download.fromSongs(this.songs)
+      this.close()
     },
 
-    copyUrl() {
-      copyText(songStore.getShareableUrl(this.songs[0]));
-    },
+    copyUrl () {
+      copyText(songStore.getShareableUrl(this.songs[0]))
+    }
   },
 
   /**
@@ -159,30 +153,31 @@ export default {
    * With this, we can catch when the submenus shown or hidden, and can make sure
    * they don't appear off-screen.
    */
-  mounted() {
-    $(this.$el).find('.has-sub').hover(e => {
-      const $submenu = $(e.target).find('.submenu:first');
-      if (!$submenu.length) {
-        return;
+  mounted () {
+    this.$el.querySelectorAll('.has-sub').forEach(item => {
+      const submenu = item.querySelector('.submenu')
+      if (!submenu) {
+        return
       }
 
-      $submenu.show();
+      item.addEventListener('mouseenter', e => {
+        submenu.style.display = 'block'
 
-      // Make sure the submenu isn't off-screen
-      if ($submenu[0].getBoundingClientRect().bottom > window.innerHeight) {
-        $submenu.css({
-          top: 'auto',
-          bottom: 0,
-        });
-      }
-    }, e => {
-      $(e.target).find('.submenu:first').hide().css({
-        top: 0,
-        bottom: 'auto',
-      });
-    });
-  },
-};
+        // Make sure the submenu isn't off-screen
+        if (submenu.getBoundingClientRect().bottom > window.innerHeight) {
+          submenu.style.top = 'auto'
+          submenu.style.bottom = 0
+        }
+      })
+
+      item.addEventListener('mouseleave', e => {
+        submenu.style.top = 0
+        submenu.style.bottom = 'auto'
+        submenu.style.display = 'none'
+      })
+    })
+  }
+}
 </script>
 
 <style lang="sass" scoped>

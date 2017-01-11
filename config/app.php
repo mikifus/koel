@@ -142,6 +142,7 @@ return [
         Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
         Tymon\JWTAuth\Providers\JWTAuthServiceProvider::class,
         Aws\Laravel\AwsServiceProvider::class,
+        Sentry\SentryLaravel\SentryLaravelServiceProvider::class,
 
         /*
          * Application Service Providers...
@@ -151,12 +152,13 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\MediaServiceProvider::class,
+        App\Providers\MediaCacheServiceProvider::class,
         App\Providers\UtilServiceProvider::class,
         App\Providers\LastfmServiceProvider::class,
         App\Providers\YouTubeServiceProvider::class,
         App\Providers\DownloadServiceProvider::class,
         App\Providers\BroadcastServiceProvider::class,
-
+        App\Providers\iTunesServiceProvider::class,
 
     ],
 
@@ -206,6 +208,7 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
 
         'Media' => App\Facades\Media::class,
+        'MediaCache' => App\Facades\MediaCache::class,
         'Util' => App\Facades\Util::class,
         'Lastfm' => App\Facades\Lastfm::class,
         'YouTube' => App\Facades\YouTube::class,
@@ -213,6 +216,8 @@ return [
         'JWTAuth' => Tymon\JWTAuth\Facades\JWTAuth::class,
         'JWTFactory' => Tymon\JWTAuth\Facades\JWTFactory::class,
         'AWS' => Aws\Laravel\AwsFacade::class,
+        'Sentry' => Sentry\SentryLaravel\SentryFacade::class,
+        'iTunes' => App\Facades\iTunes::class,
 
     ],
 
