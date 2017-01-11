@@ -1,5 +1,5 @@
 <template>
-  <div id="bars">
+  <div class="bars">
     <img src="/public/img/bars.gif" alt="Sound bars" height="13" width="auto">
   </div>
 </template>
@@ -42,15 +42,16 @@ export default {
   // They call the Rising Sun
   // And it's been the ruin of many a poor boy
   // And God, I know I'm one.
-};
+}
 </script>
 
-<style lang="sass">
-#bars {
+<style lang="sass" scoped>
+.bars {
   width: 28px;
   height: 13px;
   position: relative;
   display: inline-block;
   backface-visibility: hidden;
+  margin-bottom: 5px;
 }
 </style>

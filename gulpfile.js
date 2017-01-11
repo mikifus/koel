@@ -2,7 +2,10 @@ require('events').EventEmitter.defaultMaxListeners = 30;
 
 var cssnext = require('postcss-cssnext');
 var elixir = require('laravel-elixir');
+var gulp  = require('gulp');
 var gutils = require('gulp-util');
+var exec = require('child_process').exec;
+var chalk = require('chalk');
 
 elixir.config.js.browserify.transformers.push({
   name: 'vueify',
@@ -32,7 +35,6 @@ elixir(function (mix) {
       'resources/assets/css/**/*.css',
       'node_modules/font-awesome/css/font-awesome.min.css',
       'node_modules/rangeslider.js/dist/rangeslider.css',
-      'node_modules/sweetalert/dist/sweetalert.css'
     ], 'public/css/vendors.css', './');
 
   mix.version(['css/vendors.css', 'css/app.css', 'js/vendors.js', 'js/main.js']);
@@ -46,4 +48,28 @@ elixir(function (mix) {
       ]
     });
   }
+});
+
+gulp.task("e2e", function (cb) {
+  if (process.platform !== 'darwin') {
+    console.log(chalk.red('Unsupported OS. Exiting.'));
+    process.exit(1);
+  }
+
+  console.log(chalk.green('Running E2E tests'));
+  console.log(chalk.yellow('Make sure Selenium server with Chrome webdriver is listening on port 4444'));
+  var tasks = [
+    'php artisan serve --port=8081',
+    'phpunit tests/e2e -c phpunit.e2e.xml'
+  ];
+  tasks.forEach(function (t) {
+    console.log('Executing ' + chalk.magenta(t));
+    var child = exec(t);
+    child.stdout.on('data', function(data) {
+      process.stdout.write(data);
+    });
+    child.stderr.on('data', function(data) {
+      process.stderr.write(data);
+    });
+  })
 });

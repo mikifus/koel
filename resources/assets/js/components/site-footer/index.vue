@@ -34,28 +34,24 @@
         <div class="wrapper" v-koel-clickaway="closeEqualizer">
           <equalizer v-if="useEqualizer" v-show="showEqualizer"/>
           <sound-bar v-show="song.playbackState === 'playing'"/>
-          <i class="like control fa fa-heart" :class="{ liked: song.liked }" @click.prevent="like"/>
-          <span class="control"
+          <i v-if="song.id"
+            class="like control fa fa-heart"
+            :class="{ liked: song.liked }"
+            @click.prevent="like"/>
+          <span class="control info"
             @click.prevent="toggleExtraPanel"
             :class="{ active: prefs.showExtraPanel }">Info</span>
-          <i class="fa fa-sliders control"
+          <i class="fa fa-sliders control equalizer"
             v-if="useEqualizer"
             @click="showEqualizer = !showEqualizer"
             :class="{ active: showEqualizer }"/>
-          <a v-else
-            class="queue control"
-            :class="{ active: viewingQueue }"
-            href="/#!/queue">
+          <a v-else class="queue control" :class="{ active: viewingQueue }" href="/#!/queue">
             <i class="fa fa-list-ol"></i>
           </a>
           <span class="repeat control" :class="prefs.repeatMode" @click.prevent="changeRepeatMode">
             <i class="fa fa-repeat"></i>
           </span>
-          <span class="volume control" id="volume">
-            <i class="fa fa-volume-up" @click.prevent="mute" v-show="!muted"/>
-            <i class="fa fa-volume-off" @click.prevent="unmute" v-show="muted"/>
-            <input type="range" id="volumeRange" max="10" step="0.1" class="plyr__volume">
-          </span>
+          <volume/>
         </div>
       </div>
     </div>
@@ -63,19 +59,18 @@
 </template>
 
 <script>
-import config from '../../config';
-import { playback } from '../../services';
-import { isAudioContextSupported, event } from '../../utils';
-import { songStore, favoriteStore, preferenceStore } from '../../stores';
+import { playback } from '../../services'
+import { isAudioContextSupported, event } from '../../utils'
+import { songStore, favoriteStore, preferenceStore } from '../../stores'
 
-import soundBar from '../shared/sound-bar.vue';
-import equalizer from './equalizer.vue';
+import soundBar from '../shared/sound-bar.vue'
+import equalizer from './equalizer.vue'
+import volume from './volume.vue'
 
 export default {
-  data() {
+  data () {
     return {
       song: songStore.stub,
-      muted: false,
       viewingQueue: false,
 
       prefs: preferenceStore.state,
@@ -87,11 +82,11 @@ export default {
        *
        * @type {Boolean}
        */
-      useEqualizer: isAudioContextSupported(),
-    };
+      useEqualizer: isAudioContextSupported()
+    }
   },
 
-  components: { soundBar, equalizer },
+  components: { soundBar, equalizer, volume },
 
   computed: {
     /**
@@ -99,8 +94,8 @@ export default {
      *
      * @return {?Object}
      */
-    prev() {
-      return playback.previous;
+    prev () {
+      return playback.previous
     },
 
     /**
@@ -108,94 +103,76 @@ export default {
      *
      * @return {?Object}
      */
-    next() {
-      return playback.next;
-    },
+    next () {
+      return playback.next
+    }
   },
 
   methods: {
     /**
-     * Mute the volume.
-     */
-    mute() {
-      this.muted = true;
-
-      return playback.mute();
-    },
-
-    /**
-     * Unmute the volume.
-     */
-    unmute() {
-      this.muted = false;
-
-      return playback.unmute();
-    },
-
-    /**
      * Play the previous song in queue.
      */
-    playPrev() {
-      return playback.playPrev();
+    playPrev () {
+      return playback.playPrev()
     },
 
     /**
      * Play the next song in queue.
      */
-    playNext() {
-      return playback.playNext();
+    playNext () {
+      return playback.playNext()
     },
 
     /**
      * Resume the current song.
      * If the current song is the stub, just play the first song in the queue.
      */
-    resume() {
+    resume () {
       if (!this.song.id) {
-        return playback.playFirstInQueue();
+        return playback.playFirstInQueue()
       }
 
-      playback.resume();
+      playback.resume()
     },
 
     /**
      * Pause the playback.
      */
-    pause() {
-      playback.pause();
+    pause () {
+      playback.pause()
     },
 
     /**
      * Change the repeat mode.
      */
-    changeRepeatMode() {
-      return playback.changeRepeatMode();
+    changeRepeatMode () {
+      return playback.changeRepeatMode()
     },
 
     /**
      * Like the current song.
      */
-    like() {
+    like () {
       if (!this.song.id) {
-        return;
+        return
       }
 
-      favoriteStore.toggleOne(this.song);
+      favoriteStore.toggleOne(this.song)
     },
 
     /**
      * Toggle hide or show the extra panel.
      */
-    toggleExtraPanel() {
-      preferenceStore.set('showExtraPanel', !this.prefs.showExtraPanel);
+    toggleExtraPanel () {
+      preferenceStore.set('showExtraPanel', !this.prefs.showExtraPanel)
     },
 
-    closeEqualizer() {
-      this.showEqualizer = false;
-    },
+    closeEqualizer () {
+      this.showEqualizer = false
+    }
   },
 
-  created() {
+  created () {
     event.on({
       /**
        * Listen to song:played event to set the current playing song and the cover image.
@@ -205,20 +182,24 @@ export default {
        * @return {Boolean}
        */
       'song:played': song => {
-        this.song = song;
-        this.cover = this.song.album.cover;
+        this.song = song
+        this.cover = this.song.album.cover
       },
 
       /**
        * Listen to main-content-view:load event and highlight the Queue icon if
        * the Queue screen is being loaded.
        */
-      'main-content-view:load': view => this.viewingQueue = view === 'queue',
+      'main-content-view:load': view => {
+        this.viewingQueue = view === 'queue'
+      },
 
-      'koel:teardown': () => this.song = songStore.stub,
-    });
-  },
-};
+      'koel:teardown': () => {
+        this.song = songStore.stub
+      }
+    })
+  }
+}
 </script>
 
 <style lang="sass">
@@ -492,23 +473,6 @@ export default {
         }
       }
     }
-  }
-}
-
-#volume {
-  @include vertical-center();
-
-  // More tweaks
-  input[type=range] {
-    margin-top: -3px;
-  }
-
-  i {
-    width: 16px;
-  }
-
-  @media only screen and (max-width: 768px) {
-    display: none !important;
   }
 }
 </style>
